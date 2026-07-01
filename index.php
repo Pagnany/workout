@@ -16,12 +16,12 @@
 	<br>
 	<a href="region_erstellen.php">Region erstellen</a>
 	<br>
-	<!-- ==cTYUR4)TYmX#Ng -->
 </body>
 
 </html>
 
 <!-- 
+Tabellen:
 uebung(id,bezeichnung,beschreibung,video_url)
 region(id,bezeichnung)
 uebung_region(id_region,id_uebung,intensitaet)

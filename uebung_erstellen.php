@@ -1,3 +1,18 @@
+<?php
+$db_server = 'database-5020821545.webspace-host.com';
+$db_benutzer = 'dbu3016613';
+$db_passwort = '==cTYUR4)TYmX#Ng';
+$db_name = 'dbs15849290';
+
+// Verbindungsaufbau
+try {
+	$dbh = new PDO("mysql:host=$db_server;dbname=$db_name", $db_benutzer, $db_passwort);
+	//echo 'Verbindung zur Datenbank hergestellt.';
+} catch (PDOException $e) {
+	die('Fehler bei der Verbindung zur Datenbank: ' . $e->getMessage());
+}
+?>
+
 <html>
 
 <head>
@@ -17,5 +32,8 @@
 </html>
 
 <!-- 
+Tabellen:
 uebung(id,bezeichnung,beschreibung,video_url)
+region(id,bezeichnung)
+uebung_region(id_region,id_uebung,intensitaet)
 -->
