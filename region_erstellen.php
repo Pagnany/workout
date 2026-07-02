@@ -47,6 +47,9 @@ $regionen = $dbh->query('SELECT id, bezeichnung FROM region ORDER BY bezeichnung
 </head>
 
 <body>
+	<header class="site-header">
+		<h1 class="site-title"><a href="/workout">Workout</a></h1>
+	</header>
 	<h1>Region erstellen</h1>
 
 	<?php if ($message !== ''): ?>
