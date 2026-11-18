@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$bezeichnung = trim($_POST['bezeichnung'] ?? '');
 	$beschreibung = trim($_POST['beschreibung'] ?? '');
 	$video_url = trim($_POST['video_url'] ?? '');
+	$mehrseitig = isset($_POST['mehrseitig']) ? 1 : 0;
 	$selected = $_POST['regions'] ?? [];
 	$intensities = $_POST['intensity'] ?? [];
 
@@ -62,9 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	if (empty($errors)) {
 		try {
 			$dbh->beginTransaction();
-			$sql = 'INSERT INTO uebung (bezeichnung, beschreibung, video_url) VALUES (:b, :desc, :v)';
+			$sql = 'INSERT INTO uebung (bezeichnung, beschreibung, video_url, mehrseitig) VALUES (:b, :desc, :v, :mehrseitig)';
 			$ins = $dbh->prepare($sql);
-			$ins->execute([':b' => $bezeichnung, ':desc' => $beschreibung, ':v' => $video_url]);
+			$ins->execute([
+				':b' => $bezeichnung,
+				':desc' => $beschreibung,
+				':v' => $video_url,
+				':mehrseitig' => $mehrseitig
+			]);
 			$uebungId = (int)$dbh->lastInsertId();
 
 			if ($uebungId && !empty($validatedRegions)) {
@@ -139,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<label>Bezeichnung: <input type="text" name="bezeichnung" value="<?php echo htmlspecialchars($_POST['bezeichnung'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required></label>
 		<label>Beschreibung: <textarea name="beschreibung"><?php echo htmlspecialchars($_POST['beschreibung'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea></label>
 		<label>Video-URL: <input type="url" name="video_url" value="<?php echo htmlspecialchars($_POST['video_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></label>
+		<label><input type="checkbox" name="mehrseitig" value="1" <?php if (isset($_POST['mehrseitig'])) echo 'checked'; ?>> Mehrseitig</label>
 
 		<fieldset>
 			<legend>Regionen (wähle mindestens eine, Intensität 0–100)</legend>
@@ -182,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!-- 
 Tabellen:
-uebung(id,bezeichnung,beschreibung,video_url)
+uebung(id,bezeichnung,beschreibung,video_url,mehrseitig)
 region(id,bezeichnung)
 uebung_region(id_region,id_uebung,intensitaet)
 -->

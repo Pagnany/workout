@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($dbh !== null) {
 	try {
 		$uebungen = $dbh->query(
-			'SELECT id, bezeichnung, beschreibung, video_url FROM uebung'
+			'SELECT id, bezeichnung, beschreibung, video_url, mehrseitig FROM uebung'
 		)->fetchAll();
 		shuffle($uebungen);
 	} catch (PDOException $e) {
@@ -226,6 +226,7 @@ function workoutDauer(int $sekunden): string
 					<?php if (!empty($uebung['video_url'])): ?>
 						<p><a href="<?php echo htmlspecialchars($uebung['video_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer">Übungsvideo öffnen</a></p>
 					<?php endif; ?>
+					<p><strong>Mehrseitig:</strong> <?php echo !empty($uebung['mehrseitig']) ? 'Ja' : 'Nein'; ?></p>
 				</article>
 			<?php endforeach; ?>
 

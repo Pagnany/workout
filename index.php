@@ -26,7 +26,7 @@
 
 <!-- 
 Tabellen:
-uebung(id,bezeichnung,beschreibung,video_url)
+uebung(id,bezeichnung,beschreibung,video_url,mehrseitig)
 region(id,bezeichnung)
 uebung_region(id_region,id_uebung,intensitaet)
 -->

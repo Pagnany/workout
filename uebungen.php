@@ -16,7 +16,7 @@ $error = '';
 
 try {
 	$stmt = $dbh->query(
-		'SELECT u.id, u.bezeichnung, u.beschreibung, u.video_url, ' .
+		'SELECT u.id, u.bezeichnung, u.beschreibung, u.video_url, u.mehrseitig, ' .
 			'r.id AS region_id, r.bezeichnung AS region_bezeichnung, ur.intensitaet ' .
 			'FROM uebung u ' .
 			'LEFT JOIN uebung_region ur ON ur.id_uebung = u.id ' .
@@ -35,6 +35,7 @@ try {
 				'bezeichnung' => $row['bezeichnung'],
 				'beschreibung' => $row['beschreibung'],
 				'video_url' => $row['video_url'],
+				'mehrseitig' => (bool) $row['mehrseitig'],
 				'regionen' => []
 			];
 		}
@@ -114,6 +115,7 @@ try {
 			<article class="uebung">
 				<h2><?php echo htmlspecialchars($uebung['bezeichnung'], ENT_QUOTES, 'UTF-8'); ?></h2>
 				<p class="beschreibung"><?php echo nl2br(htmlspecialchars($uebung['beschreibung'] ?? '', ENT_QUOTES, 'UTF-8')); ?></p>
+				<p><strong>Mehrseitig:</strong> <?php echo $uebung['mehrseitig'] ? 'Ja' : 'Nein'; ?></p>
 
 				<?php if (!empty($uebung['video_url'])): ?>
 					<p><strong>Video:</strong> <a href="<?php echo htmlspecialchars($uebung['video_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer">Öffnen</a></p>
@@ -138,7 +140,7 @@ try {
 
 <!--
 Tabellen:
-uebung(id,bezeichnung,beschreibung,video_url)
+uebung(id,bezeichnung,beschreibung,video_url,mehrseitig)
 region(id,bezeichnung)
 uebung_region(id_region,id_uebung,intensitaet)
 -->
