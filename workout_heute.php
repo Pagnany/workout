@@ -94,10 +94,28 @@ if ($dbh !== null) {
 	}
 }
 
-$anzahlUebungen = count($uebungen);
+$timerUebungen = [];
+foreach ($uebungen as $uebung) {
+	if (!empty($uebung['mehrseitig'])) {
+		$timerUebungen[] = $uebung + ['anzeige_name' => $uebung['bezeichnung'] . ' – links', 'seiten_gruppe' => (int) $uebung['id']];
+		$timerUebungen[] = $uebung + ['anzeige_name' => $uebung['bezeichnung'] . ' – rechts', 'seiten_gruppe' => (int) $uebung['id']];
+	} else {
+		$timerUebungen[] = $uebung + ['anzeige_name' => $uebung['bezeichnung'], 'seiten_gruppe' => null];
+	}
+}
+
+$anzahlUebungen = count($timerUebungen);
 $sekundenProUebung = $anzahlUebungen > 0 ? (int) ceil(1200 / $anzahlUebungen) : 0;
 $aktiveTrainingszeit = $sekundenProUebung * $anzahlUebungen;
-$gesamtzeit = $aktiveTrainingszeit + max(0, $anzahlUebungen - 1) * 10;
+$anzahlPausen = 0;
+for ($i = 0; $i < $anzahlUebungen - 1; $i++) {
+	$aktuelleGruppe = $timerUebungen[$i]['seiten_gruppe'];
+	$naechsteGruppe = $timerUebungen[$i + 1]['seiten_gruppe'];
+	if ($aktuelleGruppe === null || $aktuelleGruppe !== $naechsteGruppe) {
+		$anzahlPausen++;
+	}
+}
+$gesamtzeit = $aktiveTrainingszeit + $anzahlPausen * 10;
 
 function workoutDauer(int $sekunden): string
 {
@@ -217,9 +235,9 @@ function workoutDauer(int $sekunden): string
 			</section>
 
 			<h2>Übungen</h2>
-			<?php foreach ($uebungen as $uebung): ?>
+			<?php foreach ($timerUebungen as $uebung): ?>
 				<article class="uebung">
-					<h3><?php echo htmlspecialchars($uebung['bezeichnung'], ENT_QUOTES, 'UTF-8'); ?></h3>
+					<h3><?php echo htmlspecialchars($uebung['anzeige_name'], ENT_QUOTES, 'UTF-8'); ?></h3>
 					<?php if (!empty($uebung['beschreibung'])): ?>
 						<p class="beschreibung"><?php echo nl2br(htmlspecialchars($uebung['beschreibung'], ENT_QUOTES, 'UTF-8')); ?></p>
 					<?php endif; ?>
@@ -235,9 +253,12 @@ function workoutDauer(int $sekunden): string
 					echo json_encode(
 						array_map(
 							static function (array $uebung): array {
-								return ['name' => $uebung['bezeichnung']];
+								return [
+									'name' => $uebung['anzeige_name'],
+									'seiten_gruppe' => $uebung['seiten_gruppe']
+								];
 							},
-							$uebungen
+							$timerUebungen
 						),
 						JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
 					);
@@ -317,6 +338,18 @@ function workoutDauer(int $sekunden): string
 						progressElement.value = currentIndex + 1;
 						if (currentIndex === exercises.length - 1) {
 							finishWorkout();
+							return;
+						}
+
+						const currentExercise = exercises[currentIndex];
+						const nextExercise = exercises[currentIndex + 1];
+						if (currentExercise.seiten_gruppe !== null &&
+							currentExercise.seiten_gruppe === nextExercise.seiten_gruppe) {
+							currentIndex++;
+							showExercise();
+							statusElement.textContent = 'Jetzt trainieren – die andere Seite!';
+							phase = 'exercise';
+							deadline = Date.now() + exerciseSeconds * 1000;
 							return;
 						}
 
@@ -403,3 +436,9 @@ function workoutDauer(int $sekunden): string
 </body>
 
 </html>
+<!--
+Tabellen:
+uebung(id,bezeichnung,beschreibung,video_url,mehrseitig)
+region(id,bezeichnung)
+uebung_region(id_region,id_uebung,intensitaet)
+-->
