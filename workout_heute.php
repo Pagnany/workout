@@ -85,8 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($dbh !== null) {
 	try {
 		$uebungen = $dbh->query(
-			'SELECT id, bezeichnung, beschreibung, video_url FROM uebung ORDER BY id ASC'
+			'SELECT id, bezeichnung, beschreibung, video_url FROM uebung'
 		)->fetchAll();
+		shuffle($uebungen);
 	} catch (PDOException $e) {
 		error_log('Fehler beim Laden des Tages-Workouts: ' . $e->getMessage());
 		$error = 'Das Workout konnte gerade nicht geladen werden. Bitte versuche es später erneut.';
