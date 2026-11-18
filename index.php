@@ -12,6 +12,8 @@
 
 <body>
 	<h1>Workout</h1>
+	<a href="workout_heute.php">Workout für heute starten</a>
+	<br>
 	<a href="uebungen.php">Alle Übungen</a>
 	<br>
 	<a href="uebung_erstellen.php">Übung erstellen</a>
