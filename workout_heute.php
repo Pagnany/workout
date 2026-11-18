@@ -4,6 +4,7 @@ $db_benutzer = 'dbu3016613';
 $db_passwort = '==cTYUR4)TYmX#Ng';
 $db_name = 'dbs15849290';
 
+$dbh = null;
 $uebungen = [];
 $error = '';
 
@@ -17,12 +18,79 @@ try {
 			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
 		]
 	);
-	$uebungen = $dbh->query(
-		'SELECT id, bezeichnung, beschreibung, video_url FROM uebung ORDER BY id ASC'
-	)->fetchAll();
 } catch (PDOException $e) {
-	error_log('Fehler beim Laden des Tages-Workouts: ' . $e->getMessage());
+	error_log('Fehler bei der Datenbankverbindung: ' . $e->getMessage());
 	$error = 'Das Workout konnte gerade nicht geladen werden. Bitte versuche es später erneut.';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	header('Content-Type: application/json; charset=utf-8');
+
+	if ($dbh === null) {
+		http_response_code(500);
+		echo json_encode(['success' => false, 'message' => 'Die Datenbank ist gerade nicht erreichbar.']);
+		exit;
+	}
+
+	$action = $_POST['action'] ?? '';
+	if ($action !== 'start' && $action !== 'finish') {
+		http_response_code(400);
+		echo json_encode(['success' => false, 'message' => 'Ungültige Workout-Aktion.']);
+		exit;
+	}
+
+	if (!session_start()) {
+		error_log('Workout-Sitzung konnte nicht gestartet werden.');
+		http_response_code(500);
+		echo json_encode(['success' => false, 'message' => 'Das Workout konnte nicht gespeichert werden.']);
+		exit;
+	}
+
+	try {
+		if ($action === 'start') {
+			$startedAt = $dbh->query('SELECT NOW()')->fetchColumn();
+			$_SESSION['workout_started_at'] = $startedAt;
+			unset($_SESSION['completed_workout_id']);
+
+			echo json_encode(['success' => true]);
+			exit;
+		}
+
+		if (isset($_SESSION['completed_workout_id'])) {
+			echo json_encode(['success' => true]);
+			exit;
+		}
+
+		if (!isset($_SESSION['workout_started_at'])) {
+			http_response_code(409);
+			echo json_encode(['success' => false, 'message' => 'Kein gestartetes Workout zum Speichern gefunden.']);
+			exit;
+		}
+
+		$stmt = $dbh->prepare('INSERT INTO workouts (`start`, `ende`) VALUES (:start, NOW())');
+		$stmt->execute([':start' => $_SESSION['workout_started_at']]);
+		$_SESSION['completed_workout_id'] = (int) $dbh->lastInsertId();
+		unset($_SESSION['workout_started_at']);
+
+		echo json_encode(['success' => true]);
+		exit;
+	} catch (PDOException $e) {
+		error_log('Fehler beim Speichern des Workouts: ' . $e->getMessage());
+		http_response_code(500);
+		echo json_encode(['success' => false, 'message' => 'Das Workout konnte nicht gespeichert werden. Bitte versuche es erneut.']);
+		exit;
+	}
+}
+
+if ($dbh !== null) {
+	try {
+		$uebungen = $dbh->query(
+			'SELECT id, bezeichnung, beschreibung, video_url FROM uebung ORDER BY id ASC'
+		)->fetchAll();
+	} catch (PDOException $e) {
+		error_log('Fehler beim Laden des Tages-Workouts: ' . $e->getMessage());
+		$error = 'Das Workout konnte gerade nicht geladen werden. Bitte versuche es später erneut.';
+	}
 }
 
 $anzahlUebungen = count($uebungen);
@@ -205,17 +273,41 @@ function workoutDauer(int $sekunden): string
 					tick();
 				}
 
-				function finishWorkout() {
-					phase = 'done';
+				async function sendWorkoutAction(action) {
+					const response = await fetch(window.location.href, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: new URLSearchParams({ action: action })
+					});
+					const result = await response.json();
+					if (!response.ok || !result.success) {
+						throw new Error(result.message || 'Das Workout konnte nicht gespeichert werden.');
+					}
+				}
+
+				async function finishWorkout() {
+					phase = 'saving';
 					clearInterval(intervalId);
 					intervalId = null;
 					timerElement.textContent = '00:00';
-					statusElement.textContent = 'Geschafft! Dein Workout ist beendet.';
+					statusElement.textContent = 'Workout beendet. Die Trainingsdaten werden gespeichert ...';
 					currentExerciseElement.textContent = 'Alle ' + exercises.length + ' Übungen abgeschlossen.';
 					progressElement.value = exercises.length;
 					pauseButton.disabled = true;
-					startButton.disabled = false;
-					startButton.textContent = 'Noch einmal starten';
+					startButton.disabled = true;
+
+					try {
+						await sendWorkoutAction('finish');
+						phase = 'done';
+						statusElement.textContent = 'Geschafft! Dein Workout wurde gespeichert.';
+						startButton.disabled = false;
+						startButton.textContent = 'Noch einmal starten';
+					} catch (error) {
+						phase = 'save-error';
+						statusElement.textContent = error.message + ' Du kannst es erneut versuchen.';
+						startButton.disabled = false;
+						startButton.textContent = 'Speichern erneut versuchen';
+					}
 				}
 
 				function advance() {
@@ -248,7 +340,7 @@ function workoutDauer(int $sekunden): string
 					let remaining = Math.ceil((deadline - Date.now()) / 1000);
 					while (remaining <= 0 && (phase === 'exercise' || phase === 'break')) {
 						advance();
-						if (phase === 'done') {
+						if (phase !== 'exercise' && phase !== 'break') {
 							return;
 						}
 						remaining = Math.ceil((deadline - Date.now()) / 1000);
@@ -258,16 +350,29 @@ function workoutDauer(int $sekunden): string
 					timerElement.setAttribute('aria-label', 'Verbleibende Zeit: ' + remaining + ' Sekunden');
 				}
 
-				startButton.addEventListener('click', function() {
-					currentIndex = 0;
-					progressElement.value = 0;
-					showExercise();
-					statusElement.textContent = 'Jetzt trainieren!';
+				startButton.addEventListener('click', async function() {
+					if (phase === 'save-error') {
+						finishWorkout();
+						return;
+					}
+
 					startButton.disabled = true;
-					pauseButton.disabled = false;
-					pauseButton.textContent = 'Pausieren';
-					beginPhase('exercise', exerciseSeconds);
-					intervalId = window.setInterval(tick, 250);
+					statusElement.textContent = 'Workout wird gestartet ...';
+					try {
+						await sendWorkoutAction('start');
+						currentIndex = 0;
+						progressElement.value = 0;
+						showExercise();
+						statusElement.textContent = 'Jetzt trainieren!';
+						pauseButton.disabled = false;
+						pauseButton.textContent = 'Pausieren';
+						beginPhase('exercise', exerciseSeconds);
+						intervalId = window.setInterval(tick, 250);
+					} catch (error) {
+						phase = 'idle';
+						statusElement.textContent = error.message;
+						startButton.disabled = false;
+					}
 				});
 
 				pauseButton.addEventListener('click', function() {
