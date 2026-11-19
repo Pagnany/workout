@@ -34,9 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $regionen = $dbh->query('SELECT id, bezeichnung FROM region ORDER BY bezeichnung ASC')->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<html>
+<!doctype html>
+<html lang="de">
 
 <head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Region erstellen</title>
 	<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
 	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -44,39 +47,55 @@ $regionen = $dbh->query('SELECT id, bezeichnung FROM region ORDER BY bezeichnung
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 	<meta name="apple-mobile-web-app-title" content="MyWebSite" />
 	<link rel="manifest" href="/site.webmanifest" />
+	<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 	<header class="site-header">
-		<h1 class="site-title"><a href="/workout">Workout</a></h1>
+		<div class="site-header-inner">
+			<h1 class="site-title"><a href="/workout">Workout</a></h1>
+			<nav class="site-nav" aria-label="Hauptnavigation">
+				<a href="index.php">Übersicht</a>
+				<a href="workout_heute.php">Workout</a>
+				<a href="uebungen.php">Übungen</a>
+				<a href="uebung_erstellen.php">Übung erstellen</a>
+				<a href="region_erstellen.php" aria-current="page">Region erstellen</a>
+			</nav>
+		</div>
 	</header>
+	<main class="page-content">
 	<h1>Region erstellen</h1>
 
 	<?php if ($message !== ''): ?>
-		<p style="color: green;"><?php echo htmlspecialchars($message); ?></p>
+		<p class="success"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></p>
 	<?php endif; ?>
 
 	<?php if ($error !== ''): ?>
-		<p style="color: red;"><?php echo htmlspecialchars($error); ?></p>
+		<p class="error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
 	<?php endif; ?>
 
-	<h2>Neue Region anlegen</h2>
-	<form method="post" action="region_erstellen.php">
-		<label for="bezeichnung">Bezeichnung:</label>
-		<input type="text" id="bezeichnung" name="bezeichnung" required>
-		<button type="submit">Region anlegen</button>
-	</form>
+	<section class="card form-card">
+		<h2>Neue Region anlegen</h2>
+		<form method="post" action="region_erstellen.php">
+			<label for="bezeichnung">Bezeichnung:</label>
+			<input type="text" id="bezeichnung" name="bezeichnung" required>
+			<p><button type="submit">Region anlegen</button></p>
+		</form>
+	</section>
 
-	<h2>Vorhandene Regionen</h2>
-	<?php if (count($regionen) > 0): ?>
-		<ul>
-			<?php foreach ($regionen as $region): ?>
-				<li><?php echo htmlspecialchars($region['bezeichnung']); ?> (ID: <?php echo (int)$region['id']; ?>)</li>
-			<?php endforeach; ?>
-		</ul>
-	<?php else: ?>
-		<p>Es sind noch keine Regionen vorhanden.</p>
-	<?php endif; ?>
+	<section class="card">
+		<h2>Vorhandene Regionen</h2>
+		<?php if (count($regionen) > 0): ?>
+			<ul>
+				<?php foreach ($regionen as $region): ?>
+					<li><?php echo htmlspecialchars($region['bezeichnung'], ENT_QUOTES, 'UTF-8'); ?> (ID: <?php echo (int)$region['id']; ?>)</li>
+				<?php endforeach; ?>
+			</ul>
+		<?php else: ?>
+			<p>Es sind noch keine Regionen vorhanden.</p>
+		<?php endif; ?>
+	</section>
+	</main>
 </body>
 
 </html>

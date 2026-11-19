@@ -140,82 +140,23 @@ function workoutDauer(int $sekunden): string
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<title>Workout für heute</title>
-	<style>
-		body {
-			font-family: Arial, sans-serif;
-			max-width: 760px;
-			margin: 2rem auto;
-			padding: 0 1rem;
-			line-height: 1.5;
-			color: #202124;
-		}
-
-		.workout,
-		.uebung {
-			border: 1px solid #ddd;
-			border-radius: 10px;
-			padding: 1rem 1.25rem;
-			margin-bottom: 1rem;
-		}
-
-		.workout {
-			text-align: center;
-		}
-
-		#current-exercise {
-			font-size: clamp(1.75rem, 6vw, 2.75rem);
-			font-weight: bold;
-			line-height: 1.2;
-			margin: 1rem 0;
-			overflow-wrap: anywhere;
-		}
-
-		.timer {
-			font-size: clamp(3rem, 12vw, 5rem);
-			font-weight: bold;
-			font-variant-numeric: tabular-nums;
-			margin: 0.25rem 0;
-		}
-
-		.buttons {
-			display: flex;
-			justify-content: center;
-			gap: 0.75rem;
-			margin-top: 1rem;
-		}
-
-		button {
-			font: inherit;
-			padding: 0.65rem 1.1rem;
-			cursor: pointer;
-		}
-
-		button:disabled {
-			cursor: not-allowed;
-		}
-
-		.progress {
-			width: 100%;
-			height: 0.75rem;
-			margin-top: 1rem;
-		}
-
-		.beschreibung {
-			white-space: pre-wrap;
-			overflow-wrap: anywhere;
-		}
-
-		.error {
-			color: #b00;
-		}
-	</style>
+	<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 	<header class="site-header">
-		<h1 class="site-title"><a href="/workout">Workout</a></h1>
+		<div class="site-header-inner">
+			<h1 class="site-title"><a href="/workout">Workout</a></h1>
+			<nav class="site-nav" aria-label="Hauptnavigation">
+				<a href="index.php">Übersicht</a>
+				<a href="workout_heute.php" aria-current="page">Workout</a>
+				<a href="uebungen.php">Übungen</a>
+				<a href="uebung_erstellen.php">Übung erstellen</a>
+				<a href="region_erstellen.php">Region erstellen</a>
+			</nav>
+		</div>
 	</header>
-	<main>
+	<main class="page-content">
 		<h1>Workout für heute</h1>
 
 		<?php if ($error !== ''): ?>

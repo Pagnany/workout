@@ -66,42 +66,23 @@ try {
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 	<meta name="apple-mobile-web-app-title" content="MyWebSite" />
 	<link rel="manifest" href="/site.webmanifest" />
-	<style>
-		body {
-			font-family: Arial, sans-serif;
-			max-width: 900px;
-			margin: 2rem auto;
-			padding: 0 1rem;
-			line-height: 1.5;
-		}
-
-		.uebung {
-			border: 1px solid #ddd;
-			border-radius: 8px;
-			padding: 1rem 1.25rem;
-			margin-bottom: 1rem;
-		}
-
-		.beschreibung {
-			white-space: pre-wrap;
-			overflow-wrap: anywhere;
-		}
-
-		.regionen {
-			margin: 0.5rem 0 0;
-			padding-left: 1.2rem;
-		}
-
-		.error {
-			color: #b00;
-		}
-	</style>
+	<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 	<header class="site-header">
-		<h1 class="site-title"><a href="/workout">Workout</a></h1>
+		<div class="site-header-inner">
+			<h1 class="site-title"><a href="/workout">Workout</a></h1>
+			<nav class="site-nav" aria-label="Hauptnavigation">
+				<a href="index.php">Übersicht</a>
+				<a href="workout_heute.php">Workout</a>
+				<a href="uebungen.php" aria-current="page">Übungen</a>
+				<a href="uebung_erstellen.php">Übung erstellen</a>
+				<a href="region_erstellen.php">Region erstellen</a>
+			</nav>
+		</div>
 	</header>
+	<main class="page-content">
 	<h1>Alle Übungen</h1>
 
 	<?php if ($error !== ''): ?>
@@ -134,6 +115,7 @@ try {
 			</article>
 		<?php endforeach; ?>
 	<?php endif; ?>
+	</main>
 </body>
 
 </html>

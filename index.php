@@ -109,187 +109,24 @@ $emptyDays = (int) $monthStart->format('N') - 1;
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 	<meta name="apple-mobile-web-app-title" content="MyWebSite" />
 	<link rel="manifest" href="/site.webmanifest" />
-	<style>
-		:root {
-			color-scheme: light;
-			font-family: Arial, sans-serif;
-			color: #17231d;
-			background: #f3f6f3;
-		}
-
-		body {
-			max-width: 760px;
-			margin: 0 auto;
-			padding: 2rem 1rem;
-			line-height: 1.5;
-		}
-
-		a {
-			color: #176b45;
-		}
-
-		.site-title {
-			margin: 0 0 1.5rem;
-		}
-
-		.site-title a {
-			color: inherit;
-			text-decoration: none;
-		}
-
-		.calendar-card {
-			padding: 1.5rem;
-			margin: 1.5rem 0;
-			background: #fff;
-			border: 1px solid #dfe7e0;
-			border-radius: 16px;
-			box-shadow: 0 8px 24px #17231d0a;
-		}
-
-		.calendar-heading,
-		.month-navigation {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: 1rem;
-		}
-
-		.calendar-heading h2 {
-			margin: 0;
-			font-size: 1.35rem;
-		}
-
-		.month-navigation a {
-			display: grid;
-			width: 2.5rem;
-			height: 2.5rem;
-			place-items: center;
-			border: 1px solid #dfe7e0;
-			border-radius: 50%;
-			font-size: 1.4rem;
-			line-height: 1;
-			text-decoration: none;
-		}
-
-		.month-navigation a[aria-disabled="true"] {
-			color: #a5afa8;
-			pointer-events: none;
-		}
-
-		.calendar-grid {
-			display: grid;
-			grid-template-columns: repeat(7, minmax(0, 1fr));
-			gap: 0.35rem;
-			margin-top: 1rem;
-			text-align: center;
-		}
-
-		.weekday {
-			padding: 0.35rem 0;
-			color: #66736b;
-			font-size: 0.82rem;
-			font-weight: 700;
-		}
-
-		.calendar-day {
-			position: relative;
-			display: grid;
-			min-height: 2.7rem;
-			place-items: center;
-			border-radius: 10px;
-			font-size: 0.95rem;
-		}
-
-		.calendar-day.has-workout {
-			color: #fff;
-			background: #218253;
-			font-weight: 700;
-		}
-
-		.calendar-day.is-today:not(.has-workout) {
-			outline: 2px solid #218253;
-			outline-offset: -2px;
-			font-weight: 700;
-		}
-
-		.calendar-legend {
-			display: flex;
-			align-items: center;
-			gap: 0.5rem;
-			margin: 1rem 0 0;
-			color: #526057;
-			font-size: 0.9rem;
-		}
-
-		.legend-dot {
-			width: 0.8rem;
-			height: 0.8rem;
-			border-radius: 50%;
-			background: #218253;
-		}
-
-		.streak {
-			padding: 1rem 1.1rem;
-			margin-top: 1rem;
-			background: #f0f7f2;
-			border-radius: 12px;
-		}
-
-		.streak strong {
-			color: #176b45;
-		}
-
-		.error {
-			color: #a52222;
-		}
-
-		.actions {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0.75rem;
-			margin-top: 1.5rem;
-		}
-
-		.actions a {
-			padding: 0.7rem 1rem;
-			border: 1px solid #dfe7e0;
-			border-radius: 9px;
-			background: #fff;
-			text-decoration: none;
-		}
-
-		.actions a:first-child {
-			color: #fff;
-			border-color: #176b45;
-			background: #176b45;
-		}
-
-		@media (max-width: 420px) {
-			body {
-				padding: 1rem 0.75rem;
-			}
-
-			.calendar-card {
-				padding: 1rem 0.75rem;
-			}
-
-			.calendar-grid {
-				gap: 0.15rem;
-			}
-
-			.calendar-day {
-				min-height: 2.4rem;
-			}
-		}
-	</style>
+	<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 	<header>
-		<h1 class="site-title"><a href="/workout">Workout</a></h1>
+		<div class="site-header-inner">
+			<h1 class="site-title"><a href="/workout">Workout</a></h1>
+			<nav class="site-nav" aria-label="Hauptnavigation">
+				<a href="index.php" aria-current="page">Übersicht</a>
+				<a href="workout_heute.php">Workout</a>
+				<a href="uebungen.php">Übungen</a>
+				<a href="uebung_erstellen.php">Übung erstellen</a>
+				<a href="region_erstellen.php">Region erstellen</a>
+			</nav>
+		</div>
 	</header>
 
-	<main>
+	<main class="page-content">
 		<h2>Dein Trainingsverlauf</h2>
 		<?php if ($error !== ''): ?>
 			<p class="error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -345,9 +182,6 @@ $emptyDays = (int) $monthStart->format('N') - 1;
 
 		<nav class="actions" aria-label="Workout-Navigation">
 			<a href="workout_heute.php">Workout für heute starten</a>
-			<a href="uebungen.php">Alle Übungen</a>
-			<a href="uebung_erstellen.php">Übung erstellen</a>
-			<a href="region_erstellen.php">Region erstellen</a>
 		</nav>
 	</main>
 </body>

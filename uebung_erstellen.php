@@ -97,34 +97,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<title>Übung erstellen</title>
-	<style>
-		label {
-			display: block;
-			margin-top: 8px;
-		}
-
-		.region {
-			margin: 6px 0;
-		}
-
-		.intensity {
-			width: 80px;
-		}
-
-		.error {
-			color: #b00;
-		}
-
-		.success {
-			color: #080;
-		}
-	</style>
+	<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 	<header class="site-header">
-		<h1 class="site-title"><a href="/workout">Workout</a></h1>
+		<div class="site-header-inner">
+			<h1 class="site-title"><a href="/workout">Workout</a></h1>
+			<nav class="site-nav" aria-label="Hauptnavigation">
+				<a href="index.php">Übersicht</a>
+				<a href="workout_heute.php">Workout</a>
+				<a href="uebungen.php">Übungen</a>
+				<a href="uebung_erstellen.php" aria-current="page">Übung erstellen</a>
+				<a href="region_erstellen.php">Region erstellen</a>
+			</nav>
+		</div>
 	</header>
+	<main class="page-content">
 	<h1>Übung erstellen</h1>
 
 	<?php if ($success): ?>
@@ -141,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		</div>
 	<?php endif; ?>
 
-	<form method="post">
+	<form class="card form-card" method="post">
 		<label>Bezeichnung: <input type="text" name="bezeichnung" value="<?php echo htmlspecialchars($_POST['bezeichnung'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required></label>
 		<label>Beschreibung: <textarea name="beschreibung"><?php echo htmlspecialchars($_POST['beschreibung'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea></label>
 		<label>Video-URL: <input type="url" name="video_url" value="<?php echo htmlspecialchars($_POST['video_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></label>
@@ -167,6 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		<p><button type="submit">Erstellen</button></p>
 	</form>
+	</main>
 
 	<script>
 		// Disable intensity inputs when region checkbox not checked
