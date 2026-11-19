@@ -162,6 +162,14 @@ function workoutDauer(int $sekunden): string
 			text-align: center;
 		}
 
+		#current-exercise {
+			font-size: clamp(1.75rem, 6vw, 2.75rem);
+			font-weight: bold;
+			line-height: 1.2;
+			margin: 1rem 0;
+			overflow-wrap: anywhere;
+		}
+
 		.timer {
 			font-size: clamp(3rem, 12vw, 5rem);
 			font-weight: bold;
@@ -278,6 +286,51 @@ function workoutDauer(int $sekunden): string
 				let deadline = 0;
 				let pausedRemaining = 0;
 				let intervalId = null;
+				let audioContext = null;
+
+				function prepareAudio() {
+					if (!audioContext) {
+						const AudioContext = window.AudioContext || window.webkitAudioContext;
+						if (AudioContext) {
+							audioContext = new AudioContext();
+						}
+					}
+
+					if (audioContext && audioContext.state === 'suspended') {
+						return audioContext.resume().catch(function() {});
+					}
+
+					return Promise.resolve();
+				}
+
+				function playPhaseSound(nextPhase) {
+					prepareAudio().then(function() {
+						if (!audioContext) {
+							return;
+						}
+
+						const frequencies = nextPhase === 'break'
+							? [440, 330]
+							: [660, 880];
+						const now = audioContext.currentTime;
+
+						frequencies.forEach(function(frequency, index) {
+							const oscillator = audioContext.createOscillator();
+							const gain = audioContext.createGain();
+							const start = now + index * 0.22;
+
+							oscillator.type = 'sine';
+							oscillator.frequency.value = frequency;
+							gain.gain.setValueAtTime(0.0001, start);
+							gain.gain.exponentialRampToValueAtTime(0.18, start + 0.02);
+							gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+							oscillator.connect(gain);
+							gain.connect(audioContext.destination);
+							oscillator.start(start);
+							oscillator.stop(start + 0.17);
+						});
+					});
+				}
 
 				function formatTime(seconds) {
 					const minutes = Math.floor(seconds / 60);
@@ -293,6 +346,7 @@ function workoutDauer(int $sekunden): string
 				function beginPhase(nextPhase, seconds) {
 					phase = nextPhase;
 					deadline = Date.now() + seconds * 1000;
+					playPhaseSound(nextPhase);
 					tick();
 				}
 
@@ -348,22 +402,19 @@ function workoutDauer(int $sekunden): string
 							currentIndex++;
 							showExercise();
 							statusElement.textContent = 'Jetzt trainieren – die andere Seite!';
-							phase = 'exercise';
-							deadline = Date.now() + exerciseSeconds * 1000;
+							beginPhase('exercise', exerciseSeconds);
 							return;
 						}
 
-						phase = 'break';
 						statusElement.textContent = 'Pause – die nächste Übung startet gleich.';
 						currentExerciseElement.textContent =
 							'Als Nächstes: ' + exercises[currentIndex + 1].name;
-						deadline = Date.now() + breakSeconds * 1000;
+						beginPhase('break', breakSeconds);
 					} else if (phase === 'break') {
 						currentIndex++;
 						showExercise();
 						statusElement.textContent = 'Jetzt trainieren!';
-						phase = 'exercise';
-						deadline = Date.now() + exerciseSeconds * 1000;
+						beginPhase('exercise', exerciseSeconds);
 					}
 				}
 
@@ -395,6 +446,7 @@ function workoutDauer(int $sekunden): string
 					statusElement.textContent = 'Workout wird gestartet ...';
 					try {
 						await sendWorkoutAction('start');
+						await prepareAudio();
 						currentIndex = 0;
 						progressElement.value = 0;
 						showExercise();
@@ -424,6 +476,7 @@ function workoutDauer(int $sekunden): string
 						deadline = Date.now() + pausedRemaining;
 						statusElement.textContent = phase === 'break' ? 'Pause – die nächste Übung startet gleich.' : 'Jetzt trainieren!';
 						pauseButton.textContent = 'Pausieren';
+						playPhaseSound(phase);
 						tick();
 						if (phase === 'exercise' || phase === 'break') {
 							intervalId = window.setInterval(tick, 250);
