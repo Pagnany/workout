@@ -127,6 +127,14 @@ $emptyDays = (int) $monthStart->format('N') - 1;
 	</header>
 
 	<main class="page-content">
+		<section class="workout-cta" aria-labelledby="workout-cta-title">
+			<div>
+				<h2 id="workout-cta-title">Bereit für dein Workout?</h2>
+				<p>Starte jetzt dein Training für heute.</p>
+			</div>
+			<a class="workout-cta-button" href="workout_heute.php">Workout jetzt starten</a>
+		</section>
+
 		<h2>Dein Trainingsverlauf</h2>
 		<?php if ($error !== ''): ?>
 			<p class="error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -180,9 +188,6 @@ $emptyDays = (int) $monthStart->format('N') - 1;
 			</p>
 		</section>
 
-		<nav class="actions" aria-label="Workout-Navigation">
-			<a href="workout_heute.php">Workout für heute starten</a>
-		</nav>
 	</main>
 </body>
 
